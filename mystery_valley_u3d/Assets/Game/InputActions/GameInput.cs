@@ -162,6 +162,34 @@ public partial class @GameInput : IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Game"",
+            ""id"": ""dd067277-65e0-4c3e-9c67-90b47aa5ceb8"",
+            ""actions"": [
+                {
+                    ""name"": ""Quit"",
+                    ""type"": ""Button"",
+                    ""id"": ""5ceddce5-4abb-4b97-9eed-a7fbe3f9b1ad"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""8b70e1a5-d9bf-42cb-8a8f-a2d95eb681b8"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Quit"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": [
@@ -191,6 +219,9 @@ public partial class @GameInput : IInputActionCollection2, IDisposable
         // Drag
         m_Drag = asset.FindActionMap("Drag", throwIfNotFound: true);
         m_Drag_Position = m_Drag.FindAction("Position", throwIfNotFound: true);
+        // Game
+        m_Game = asset.FindActionMap("Game", throwIfNotFound: true);
+        m_Game_Quit = m_Game.FindAction("Quit", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -328,6 +359,39 @@ public partial class @GameInput : IInputActionCollection2, IDisposable
         }
     }
     public DragActions @Drag => new DragActions(this);
+
+    // Game
+    private readonly InputActionMap m_Game;
+    private IGameActions m_GameActionsCallbackInterface;
+    private readonly InputAction m_Game_Quit;
+    public struct GameActions
+    {
+        private @GameInput m_Wrapper;
+        public GameActions(@GameInput wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Quit => m_Wrapper.m_Game_Quit;
+        public InputActionMap Get() { return m_Wrapper.m_Game; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(GameActions set) { return set.Get(); }
+        public void SetCallbacks(IGameActions instance)
+        {
+            if (m_Wrapper.m_GameActionsCallbackInterface != null)
+            {
+                @Quit.started -= m_Wrapper.m_GameActionsCallbackInterface.OnQuit;
+                @Quit.performed -= m_Wrapper.m_GameActionsCallbackInterface.OnQuit;
+                @Quit.canceled -= m_Wrapper.m_GameActionsCallbackInterface.OnQuit;
+            }
+            m_Wrapper.m_GameActionsCallbackInterface = instance;
+            if (instance != null)
+            {
+                @Quit.started += instance.OnQuit;
+                @Quit.performed += instance.OnQuit;
+                @Quit.canceled += instance.OnQuit;
+            }
+        }
+    }
+    public GameActions @Game => new GameActions(this);
     private int m_GameSchemeSchemeIndex = -1;
     public InputControlScheme GameSchemeScheme
     {
@@ -346,5 +410,9 @@ public partial class @GameInput : IInputActionCollection2, IDisposable
     public interface IDragActions
     {
         void OnPosition(InputAction.CallbackContext context);
+    }
+    public interface IGameActions
+    {
+        void OnQuit(InputAction.CallbackContext context);
     }
 }

@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using StormStudio.Common;
+using StormStudio.Common.UI;
+using StormStudio.Common.Utils;
 using UnityEngine;
 
 public partial class GameFlow : MonoBehaviour
@@ -31,13 +33,48 @@ public partial class GameFlow : MonoBehaviour
         Application.targetFrameRate = 60;
     }
 
+    public void SceneTransition(System.Action onSceneOutFinished)
+    {
+        UIManager.Instance.SetUIInteractable(false);
+        SceneDirector.Instance.Transition(new TransitionFade()
+        {
+            duration = 0.667f,
+            tweenIn = TweenFunc.TweenType.Sine_EaseInOut,
+            tweenOut = TweenFunc.TweenType.Sine_EaseOut,
+            onStepOutDidFinish = () =>
+            {
+                onSceneOutFinished.Invoke();
+            },
+            onStepInDidFinish = () =>
+            {
+                UIManager.Instance.SetUIInteractable(true);
+            }
+        });
+    }
+
     IEnumerator Start()
     {
+        SoundManager.Instance.LoadSoundSettings();
+        SoundManager.Instance.OnEnableMusic += onEnableMusic;
+
         _gsMachine.Init(OnStateChanged, GameState.Init);
         while (true)
         {
             _gsMachine.StateUpdate();
             yield return null;
+        }
+    }
+
+    private void onEnableMusic(bool enabled)
+    {
+        if (enabled)
+        {
+            switch ((GameState)_gsMachine.CurrentState)
+            {
+                case GameState.Gameplay:
+                    SoundManager.Instance.PlayBgmGameplay();
+                    break;
+            }
         }
     }
 

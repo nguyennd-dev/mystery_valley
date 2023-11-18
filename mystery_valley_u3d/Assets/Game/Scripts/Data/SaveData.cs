@@ -3,21 +3,33 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class SlotData
+public class TileData
 {
-    public int Index;
+    public Vector3Int Position;
     public int Value;
+
+    public TileData()
+    {
+        Position = Vector3Int.zero;
+        Value = -1;
+    }
+
+    public TileData(int id, Vector3Int point)
+    {
+        Position = point;
+        Value = id;
+    }
 }
 
 [System.Serializable]
 public class GameData
 {
-    public List<SlotData> Slots;
+    public List<TileData> Slots;
     public Dictionary<int, int> Resources;
 
     public GameData()
     {
-        Slots = new List<SlotData>();
+        Slots = new List<TileData>();
         Resources = new Dictionary<int, int>();
     }
 }

@@ -15,10 +15,11 @@ public partial class GameFlow : MonoBehaviour
     {
         if (stateEvent == StateEvent.Enter)
         {
-            
+            _controller.OnStart();
         }
         else if (stateEvent == StateEvent.Exit)
         {
+            _controller.Exit();
         }
     }
 }

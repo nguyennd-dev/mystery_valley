@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 public class CameraController : MonoBehaviour
 {
     [Header("Camera Config")]
+    [SerializeField] float _radiusMoving;
     [SerializeField] float _maxSpeedCamera;
     [SerializeField] float _maxRotationSpeedCamera;
     [SerializeField] float _zoomSpeedCamera;
@@ -31,7 +32,7 @@ public class CameraController : MonoBehaviour
         _gameInput = new GameInput();
     }
 
-    void OnEnable()
+    void Start()
     {
         _zoomHeight = _tfCamera.localPosition.y;
         _tfCamera.LookAt(this.transform);
@@ -41,7 +42,7 @@ public class CameraController : MonoBehaviour
         _gameInput.Enable();
     }
 
-    void OnDisable()
+    void OnDestroy()
     {
         _gameInput.Camera.Rotation.performed -= OnRotateCamera;
         _gameInput.Camera.Zoom.performed += OnZoomCamera;
@@ -68,15 +69,18 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
-        GetTargetMovement();
-        UpdateVelocity();
-        UpdateZoom();
-        UpdatePosition();
+        if (Time.timeScale > 0)
+        {
+            GetTargetMovement();
+            UpdateVelocity();
+            UpdateZoom();
+            UpdatePosition();
+        }
     }
 
     void UpdateVelocity()
     {
-        _horizontalVelocity = (this.transform.position - _lastPosition) / Time.deltaTime;
+        _horizontalVelocity = (this.transform.position - _lastPosition) / Mathf.Max(0.001f, Time.deltaTime);
         _horizontalVelocity.y = 0;
         _lastPosition = this.transform.position;
     }
@@ -86,7 +90,8 @@ public class CameraController : MonoBehaviour
         if (_targetPosition.sqrMagnitude > 0)
         {
             _speed = Mathf.Lerp(_speed, _maxSpeedCamera, Time.deltaTime * _accelerationCamera);
-            transform.position += _targetPosition * _speed * Time.deltaTime;
+            var newPos = transform.position + _targetPosition * _speed * Time.deltaTime;
+            if (newPos.magnitude < _radiusMoving) transform.position = newPos;
         }
         else
         {

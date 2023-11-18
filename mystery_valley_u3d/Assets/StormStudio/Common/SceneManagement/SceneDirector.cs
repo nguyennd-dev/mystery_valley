@@ -116,7 +116,7 @@ namespace StormStudio.Common
             _overlayCamera.farClipPlane = 1f;
             _overlayCamera.depth = float.MaxValue;
             _overlayCamera.cullingMask = 1 << OverlayLayer;
-            _overlayCamera.clearFlags = CameraClearFlags.Depth;
+            _overlayCamera.clearFlags = CameraClearFlags.Nothing;
             _overlayCamera.enabled = true;
 
             DontDestroyOnLoad(gameObject);
